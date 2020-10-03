@@ -23,7 +23,7 @@ from pyparsing import __version__ as pyparsing_version
 
 import pyparsing
 
-from pyparsing import  (Literal, CaselessLiteral, Word, Upcase, OneOrMore, ZeroOrMore,
+from pyparsing import  (Literal, CaselessLiteral, Word, OneOrMore, ZeroOrMore,
     Forward, NotAny, delimitedList, oneOf, Group, Optional, Combine, alphas, nums,
     restOfLine, cStyleComment, nums, alphanums, printables, empty, quotedString,
     ParseException, ParseResults, CharsNotIn, dblQuotedString, QuotedString, ParserElement,

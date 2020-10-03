@@ -1,24 +1,18 @@
-# The lo interface is only used to communicate the computer with itself 
-# (interface type: loopback)
 auto lo
 iface lo inet loopback
 
-# ------ Interface eth0 ------
 auto eth0
-
-# It will be assigned a fixed IP address
 iface eth0 inet static
-    # IP-address
-    address 192.168.3.2
-    # Netmask (mask length /24)
-    netmask 255.255.255.0
+address 192.168.3.2
+netmask 255.255.255.0
 
-# ------ Interface eth1 ------
 auto eth1
-
-# It will be assigned a fixed IP address
 iface eth1 inet static
-    # IP-address
-    address 192.168.4.1
-    # Netmask (mask length /24)
-    netmask 255.255.255.0
+address 192.168.4.1
+netmask 255.255.255.0
+up ip r add 192.168.1.0/24 via 192.168.4.2 dev eth1     #lan1
+down ip r del 192.168.1.0/24
+up ip r add 192.168.2.0/24 via 192.168.4.2 dev eth1     #lan2
+down ip r del 192.168.2.0/24
+up ip r add 192.168.5.0/24 via 192.168.4.2 dev eth1     #lan5
+down ip r del 192.168.5.0/24

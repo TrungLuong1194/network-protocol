@@ -24,3 +24,13 @@ ping address
 ping address -c numb // Ping with numb packets
 ```
 - ex: ping 192.168.0.1 -c 5
+
+## 5. Display routing table
+```bash
+ip r
+```
+
+## 6. Intercept messages by ARP
+```bash
+tcpdump -tn -i eth0
+```

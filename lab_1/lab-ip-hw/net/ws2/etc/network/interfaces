@@ -1,17 +1,8 @@
-# The lo interface is only used to communicate the computer with itself 
-# (interface type: loopback)
 auto lo
 iface lo inet loopback
 
-# ------ Interface eth0 ------
 auto eth0
-
-# It will be assigned a fixed IP address
 iface eth0 inet static
-    # IP-address
-    address 192.168.5.1
-    # Netmask (mask length /24)
-    netmask 255.255.255.0
-
-# IP-address of the router r3
+address 192.168.5.1
+netmask 255.255.255.0
 gateway 192.168.5.2

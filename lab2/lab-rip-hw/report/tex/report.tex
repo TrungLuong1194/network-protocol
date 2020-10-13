@@ -127,9 +127,9 @@ log file /var/log/quagga/ripd.log
 \begin{Verbatim}
 wsp2:~# traceroute 10.10.1.1
 traceroute to 10.10.1.1 (10.10.1.1), 64 hops max, 40 byte packets
- 1  10.10.6.1 (10.10.6.1)  1 ms  0 ms  1 ms
- 2  10.10.3.1 (10.10.3.1)  0 ms  0 ms  0 ms
- 3  10.10.1.1 (10.10.1.1)  1 ms  1 ms  0 ms
+ 1  10.10.6.1 (10.10.6.1)  1 ms  1 ms  1 ms
+ 2  10.10.4.2 (10.10.4.2)  1 ms  1 ms  1 ms
+ 3  10.10.1.1 (10.10.1.1)  1 ms  1 ms  1 ms
 \end{Verbatim}
 
 Вывод \textbf{traceroute} от узла такого-то до внешнего IP (195.19.38.2 сгодится).
@@ -146,34 +146,21 @@ tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
 IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
 	RIPv2, Response, length: 124, routes: 6
 	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 132) 10.10.3.1.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 104, routes: 5
+	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 112) 10.10.3.1.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 84, routes: 4
 	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
 	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
 IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
 	RIPv2, Response, length: 124, routes: 6
 	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 124, routes: 6
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 132) 10.10.3.1.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 104, routes: 5
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
+	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
 ...
 \end{Verbatim}
 
 Вывод таблицы RIP.
 
 \begin{Verbatim}
-r1:~# vtysh 
-
-Hello, this is Quagga (version 0.99.10).
-Copyright 1996-2005 Kunihiro Ishiguro, et al.
-
 r1# show ip rip
 Codes: R - RIP, C - connected, S - Static, O - OSPF, B - BGP
 Sub-codes:
@@ -182,13 +169,12 @@ Sub-codes:
 
      Network            Next Hop         Metric From            Tag Time
 K(r) 0.0.0.0/0          172.16.0.1            1 self              0
-R(n) 10.10.1.0/24       10.10.5.1             2 10.10.5.1         0 00:56
+R(n) 10.10.1.0/24       10.10.2.1             2 10.10.2.1         0 00:52
 C(i) 10.10.2.0/24       0.0.0.0               1 self              0
-R(n) 10.10.3.0/24       10.10.5.1             2 10.10.5.1         0 00:56
-R(n) 10.10.4.0/24       10.10.2.1             2 10.10.2.1         0 00:58
+R(n) 10.10.3.0/24       10.10.6.1             2 10.10.6.1         0 00:49
+R(n) 10.10.4.0/24       10.10.6.1             2 10.10.6.1         0 00:49
 C(i) 10.10.5.0/24       0.0.0.0               1 self              0
 C(i) 10.10.6.0/24       0.0.0.0               1 self              0
-C(r) 172.16.0.0/16      0.0.0.0               1 self (connected:1)  0
 \end{Verbatim}
 
 Вывод таблицы маршрутизации.
@@ -196,13 +182,13 @@ C(r) 172.16.0.0/16      0.0.0.0               1 self (connected:1)  0
 \begin{Verbatim}
 r1:~# ip r
 10.10.6.0/24 dev eth1  proto kernel  scope link  src 10.10.6.2 
-10.10.4.0/24 via 10.10.2.1 dev eth0  proto zebra  metric 2 
+10.10.4.0/24 via 10.10.6.1 dev eth1  proto zebra  metric 2 
 10.10.5.0/24 dev eth2  proto kernel  scope link  src 10.10.5.2 
 10.10.2.0/24 dev eth0  proto kernel  scope link  src 10.10.2.2 
-10.10.3.0/24 via 10.10.5.1 dev eth2  proto zebra  metric 2 
-10.10.1.0/24 via 10.10.5.1 dev eth2  proto zebra  metric 2 
+10.10.3.0/24 via 10.10.6.1 dev eth1  proto zebra  metric 2 
+10.10.1.0/24 via 10.10.2.1 dev eth0  proto zebra  metric 2 
 172.16.0.0/16 dev eth3  proto kernel  scope link  src 172.16.0.20 
-default via 172.16.0.1 dev eth3
+default via 172.16.0.1 dev eth3 
 \end{Verbatim}
 
 
@@ -253,31 +239,121 @@ IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 172) 10.1
 
 \section{Имитация устранимой поломки в сети}
 
-Какой маршрутизатор выключили?
+Маршрутизатор \textbf{r4} был выключичен.
 
-Вывод таблицы RIP непосредственно перед истечением таймера устаревания (на маршрутизаторе-соседе отключенного).
+Вывод таблицы RIP непосредственно перед истечением таймера устаревания (на маршрутизаторе \textbf{r3} -соседе отключенного).
 
 \begin{Verbatim}
-Таблица RIP
+r3# show ip rip
+Codes: R - RIP, C - connected, S - Static, O - OSPF, B - BGP
+Sub-codes:
+      (n) - normal, (s) - static, (d) - default, (r) - redistribute,
+      (i) - interface
+
+     Network            Next Hop         Metric From            Tag Time
+R(n) 0.0.0.0/0          10.10.5.2             2 10.10.5.2         0 00:54
+C(i) 10.10.1.0/24       0.0.0.0               1 self              0
+R(n) 10.10.2.0/24       10.10.5.2             2 10.10.5.2         0 00:54
+C(i) 10.10.3.0/24       0.0.0.0               1 self              0
+R(n) 10.10.4.0/24       10.10.3.2             2 10.10.3.2         0 01:00
+C(i) 10.10.5.0/24       0.0.0.0               1 self              0
+R(n) 10.10.6.0/24       10.10.3.2             2 10.10.3.2         0 01:00
+\end{Verbatim}
+
+\begin{Verbatim}
+wsp1:~# ping -c 1 10.10.6.3
+PING 10.10.6.3 (10.10.6.3) 56(84) bytes of data.
+64 bytes from 10.10.6.3: icmp_seq=1 ttl=62 time=34.3 ms
+
+--- 10.10.6.3 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 34.367/34.367/34.367/0.000 ms
+
+wsp1:~# traceroute 10.10.6.3
+traceroute to 10.10.6.3 (10.10.6.3), 64 hops max, 40 byte packets
+ 1  10.10.1.2 (10.10.1.2)  1 ms  0 ms  0 ms
+ 2  10.10.4.1 (10.10.4.1)  1 ms  1 ms  1 ms
+ 3  10.10.6.3 (10.10.6.3)  1 ms  1 ms  1 ms
 \end{Verbatim}
 
 Перестроенная таблица на этом же маршрутизаторе
 
 \begin{Verbatim}
-Таблица RIP
+r4:~# halt
+
+r3# show ip rip
+Codes: R - RIP, C - connected, S - Static, O - OSPF, B - BGP
+Sub-codes:
+      (n) - normal, (s) - static, (d) - default, (r) - redistribute,
+      (i) - interface
+
+     Network            Next Hop         Metric From            Tag Time
+R(n) 0.0.0.0/0          10.10.5.2             2 10.10.5.2         0 01:00
+C(i) 10.10.1.0/24       0.0.0.0               1 self              0
+R(n) 10.10.2.0/24       10.10.5.2             2 10.10.5.2         0 01:00
+C(i) 10.10.3.0/24       0.0.0.0               1 self              0
+R(n) 10.10.4.0/24       10.10.3.2             2 10.10.3.2         0 00:56
+C(i) 10.10.5.0/24       0.0.0.0               1 self              0
+R(n) 10.10.6.0/24       10.10.3.2             2 10.10.3.2         0 00:56
 \end{Verbatim}
 
 
-Вывод \textbf{traceroute} от узла такого-то до такого-то после того, как служба RIP перестроила таблицы маршрутизации.
+Вывод \textbf{traceroute} от узла \textbf{wsp1} до \textbf{wsp2} после того, как служба RIP перестроила таблицы маршрутизации.
 
 \begin{Verbatim}
-Сюда нужно поместить вывод traceroute после "поломки".
+wsp1:~# ping -c 1 10.10.6.3
+PING 10.10.6.3 (10.10.6.3) 56(84) bytes of data.
+64 bytes from 10.10.6.3: icmp_seq=1 ttl=62 time=18.1 ms
+
+--- 10.10.6.3 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 18.153/18.153/18.153/0.000 ms
+
+wsp1:~# traceroute 10.10.6.3
+traceroute to 10.10.6.3 (10.10.6.3), 64 hops max, 40 byte packets
+ 1  10.10.1.2 (10.10.1.2)  1 ms  1 ms  1 ms
+ 2  10.10.3.2 (10.10.3.2)  1 ms  1 ms  1 ms
+ 3  10.10.6.3 (10.10.6.3)  1 ms  1 ms  1 ms
 \end{Verbatim}
 
 \section{Имитация неустранимой поломки в сети}
 
-Какой маршрутизатор выключили? (Теперь у нас нет связанной сети)
+Маршрутизатор \textbf{r3}, \textbf{r4} быди выключили.
 
-Далее поместить таблицы протокола RIP, где видна 16-ая метрика, и сообщения протокола RIP с 16-ой метрикой.
+Далее поместить таблицы протокола RIP, где видна 16-ая метрика
+
+\begin{Verbatim}
+r2# show ip rip
+Codes: R - RIP, C - connected, S - Static, O - OSPF, B - BGP
+Sub-codes:
+      (n) - normal, (s) - static, (d) - default, (r) - redistribute,
+      (i) - interface
+
+     Network            Next Hop         Metric From            Tag Time
+R(n) 0.0.0.0/0          10.10.6.2             2 10.10.6.2         0 00:53
+R(n) 10.10.1.0/24       10.10.4.2            16 10.10.4.2         0 01:45
+R(n) 10.10.2.0/24       10.10.6.2             2 10.10.6.2         0 00:53
+C(i) 10.10.3.0/24       0.0.0.0               1 self              0
+C(i) 10.10.4.0/24       0.0.0.0               1 self              0
+R(n) 10.10.5.0/24       10.10.6.2             2 10.10.6.2         0 00:53
+C(i) 10.10.6.0/24       0.0.0.0               1 self              0
+\end{Verbatim}
+
+Сообщения протокола RIP с 16-ой метрикой.
+
+\begin{Verbatim}
+r2:~# tcpdump -nvt -i eth0
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+uml_net_start_xmit: failed(-111)
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 124, routes: 6
+	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
+	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 16, next-hop: self[|rip]
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 124, routes: 6
+	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
+	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 16, next-hop: self[|rip]
+\end{Verbatim}
+
 
 \end{document}

@@ -1,3 +1,5 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
 /* Перехватчик RIP-трафика */
 
 #include <stdlib.h>
@@ -67,20 +69,21 @@ int main(void) {
         принятые сообщения передавать в функцию dump_rip(buffer, len)
     */
     
-    /* вступаем в multicast-группу */
-    memset(&membership, 0, sizeof(membership));
-    membership.imr_multiaddr.s_addr = inet_addr("224.0.0.9"); /* адрес группы */
-    membership.imr_address.s_addr = INADDR_ANY;
-    membership.imr_ifindex = 3; /* индекс сетевого интерфейса eth0 */
-    if (setsockopt(sk, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void *) &membership, sizeof(membership)) < 0)
-        perror("membership");
-    exit(1);
+	/* вступаем в multicast-группу */
+	memset(&membership, 0, sizeof(membership));
+	membership.imr_multiaddr.s_addr = inet_addr("224.0.0.9"); /* адрес группы */
+	membership.imr_address.s_addr = INADDR_ANY;
+	membership.imr_ifindex = 3; /* индекс сетевого интерфейса eth0 */
+	if (setsockopt(sk, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void *) &membership, sizeof(membership)) < 0)
+		perror("membership");
+	//exit(1);
 
-    /* разрешаем повторное использование адресов */
-    //optvalue = 1;
-    //if (setsockopt(sk, SOL_SOCKET, SO_REUSEADDR, (void *) &optvalue, sizeof(optvalue)) < 0)
-    //    perror("reuse addr");
-    //exit(1);
+	/* разрешаем повторное использование адресов */
+	optvalue = 1;
+	if (setsockopt(sk, SOL_SOCKET, SO_REUSEADDR, (void *) &optvalue, sizeof(optvalue)) < 0)
+		perror("reuse addr");
+	exit(1);
     
     return 0;   
 } 
+#endif

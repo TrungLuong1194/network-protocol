@@ -1,2 +1,0 @@
-update-rc.d quagga defaults
-service networking restart

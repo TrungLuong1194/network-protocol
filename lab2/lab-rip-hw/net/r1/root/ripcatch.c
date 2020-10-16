@@ -60,14 +60,6 @@ int main(void) {
     ssize_t size;               /* размер полученных данных */
     int optvalue;               /* значение параметра сокета */
     struct ip_mreqn membership; /* информация о multicast-группе */
-	
-    /* TODO:
-        создать сокет,
-        подключиться к multicast-группе,
-        связать сокет с портом,
-        начать приём сообщений в бесконечном цикле,
-        принятые сообщения передавать в функцию dump_rip(buffer, len)
-    */
     
 	/* вступаем в multicast-группу */
 	memset(&membership, 0, sizeof(membership));
@@ -85,5 +77,5 @@ int main(void) {
 	exit(1);
     
     return 0;   
-} 
+}
 #endif

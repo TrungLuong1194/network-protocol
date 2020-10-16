@@ -1,6 +1,6 @@
 - Display IP address
 ```bash
-    ip a
+	ip a
 ```
 
 - Send ICMP Echo Request messages

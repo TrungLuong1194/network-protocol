@@ -55,11 +55,11 @@
 Вывести (командой ip r) таблицу маршрутизации для \textbf{r2}.
 
 \begin{Verbatim}
-192.168.5.0/24 via 192.168.3.2 dev eth1 
-192.168.4.0/24 via 192.168.3.2 dev eth1 
+192.168.5.0/24 via 192.168.1.2 dev eth0 
+192.168.4.0/24 via 192.168.1.2 dev eth0 
 192.168.3.0/24 dev eth1  proto kernel  scope link  src 192.168.3.1 
-192.168.2.0/24 via 192.168.3.2 dev eth1 
-192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.3
+192.168.2.0/24 via 192.168.1.2 dev eth0 
+192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.3 
 \end{Verbatim}
 
 Вывести (командой ip r) таблицу маршрутизации для \textbf{r3}.
@@ -69,54 +69,55 @@
 192.168.4.0/24 dev eth1  proto kernel  scope link  src 192.168.4.2 
 192.168.3.0/24 via 192.168.4.1 dev eth1 
 192.168.2.0/24 dev eth0  proto kernel  scope link  src 192.168.2.2 
-192.168.1.0/24 via 192.168.2.1 dev eth0 
+192.168.1.0/24 via 192.168.4.1 dev eth1 
 \end{Verbatim}
 
 Вывести (командой ip r) таблицу маршрутизации для \textbf{r4}.
 
 \begin{Verbatim}
-192.168.5.0/24 via 192.168.4.2 dev eth1 
+192.168.5.0/24 via 192.168.3.1 dev eth0 
 192.168.4.0/24 dev eth1  proto kernel  scope link  src 192.168.4.1 
 192.168.3.0/24 dev eth0  proto kernel  scope link  src 192.168.3.2 
-192.168.2.0/24 via 192.168.4.2 dev eth1 
-192.168.1.0/24 via 192.168.4.2 dev eth1 
+192.168.2.0/24 via 192.168.3.1 dev eth0 
+192.168.1.0/24 via 192.168.3.1 dev eth0 
 \end{Verbatim}
 
 Вывести (командой ip r) таблицу маршрутизации для \textbf{ws1}.
 
 \begin{Verbatim}
 192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.1 
-default via 192.168.1.2 dev eth0 
+default via 192.168.1.2 dev eth0  
 \end{Verbatim}
 
 Вывести (командой ip r) таблицу маршрутизации для \textbf{ws2}.
 
 \begin{Verbatim}
 192.168.5.0/24 dev eth0  proto kernel  scope link  src 192.168.5.1 
-default via 192.168.5.2 dev eth0
+default via 192.168.5.2 dev eth0 
 \end{Verbatim}
 
 
 \section{Проверка настройки сети}
 
-Вывод \textbf{traceroute} от узла \textbf{ws1} такого-то до такого-то при нормальной работе сети.
+Вывод \textbf{traceroute} от узла \textbf{ws1} до \textbf{ws2} при нормальной работе сети.
 
 \begin{Verbatim}
 ws1:~# traceroute -n 192.168.5.1
 traceroute to 192.168.5.1 (192.168.5.1), 64 hops max, 40 byte packets
- 1  192.168.1.2  1 ms  1 ms  1 ms
- 2  192.168.2.2  12 ms  1 ms  1 ms
- 3  192.168.5.1  12 ms  1 ms  1 ms
+ 1  192.168.1.2  1 ms  0 ms  0 ms
+ 2  192.168.4.2  12 ms  1 ms  1 ms
+ 3  192.168.5.1  1 ms  1 ms  1 ms
 \end{Verbatim}
 
-Вывод \textbf{traceroute} от узла \textbf{ws2} такого-то до такого-то при нормальной работе сети.
+Вывод \textbf{traceroute} от узла \textbf{ws2} до \textbf{ws1} при нормальной работе сети.
 
 \begin{Verbatim}
 ws2:~# traceroute -n 192.168.1.1
 traceroute to 192.168.1.1 (192.168.1.1), 64 hops max, 40 byte packets
- 1  192.168.5.2  1 ms  0 ms  1 ms
- 2  192.168.2.1  1 ms  1 ms  1 ms
- 3  192.168.1.1  1 ms  1 ms  1 ms
+ 1  192.168.5.2  1 ms  1 ms  1 ms
+ 2  192.168.3.2  1 ms  1 ms  1 ms
+ 3  192.168.1.3  1 ms  1 ms  1 ms
+ 4  192.168.1.1  1 ms  1 ms  1 ms
 \end{Verbatim}
 
 
@@ -141,7 +142,7 @@ traceroute to 192.168.1.1 (192.168.1.1), 64 hops max, 40 byte packets
 192.168.4.0/24 dev eth1  proto kernel  scope link  src 192.168.4.2 
 192.168.3.0/24 via 192.168.4.1 dev eth1 
 192.168.2.0/24 dev eth0  proto kernel  scope link  src 192.168.2.2 
-192.168.1.0/24 via 192.168.2.1 dev eth0 
+192.168.1.0/24 via 192.168.4.1 dev eth1 
 \end{Verbatim}
 
 Для стирания кеша ARP, выполняется следующая команда: 
@@ -149,35 +150,50 @@ traceroute to 192.168.1.1 (192.168.1.1), 64 hops max, 40 byte packets
 ip n flush all
 \end{Verbatim}
 
+\begin{Verbatim}
+ws1:~# ping -c 2 192.168.5.1
+PING 192.168.5.1 (192.168.5.1) 56(84) bytes of data.
+64 bytes from 192.168.5.1: icmp_seq=1 ttl=61 time=25.6 ms
+64 bytes from 192.168.5.1: icmp_seq=2 ttl=61 time=1.32 ms
+
+--- 192.168.5.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 999ms
+rtt min/avg/max/mdev = 1.329/13.472/25.616/12.144 ms
+\end{Verbatim}
+
 Далее показана отправка пакета на маршрутизатор (косвенная маршрутизация). 
 
 \begin{Verbatim}
-a6:f9:52:b6:1e:69 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: arp who-has 192.168.1.2 tell 192.168.1.1
-0e:ab:f8:0c:10:4b > a6:f9:52:b6:1e:69, ethertype ARP (0x0806), length 42: arp reply 192.168.1.2 is-at 0e:ab:f8:0c:10:4b
-a6:f9:52:b6:1e:69 > 0e:ab:f8:0c:10:4b, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 11778, seq 1, length 64
-0e:ab:f8:0c:10:4b > a6:f9:52:b6:1e:69, ethertype IPv4 (0x0800), length 98: 192.168.5.1 > 192.168.1.1: ICMP echo reply, id 11778, seq 1, length 64
-0e:ab:f8:0c:10:4b > a6:f9:52:b6:1e:69, ethertype ARP (0x0806), length 42: arp who-has 192.168.1.1 tell 192.168.1.2
-a6:f9:52:b6:1e:69 > 0e:ab:f8:0c:10:4b, ethertype ARP (0x0806), length 42: arp reply 192.168.1.1 is-at a6:f9:52:b6:1e:69
+r1:~# tcpdump -tne -i eth0
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+a6:f9:52:b6:1e:69 > 0e:ab:f8:0c:10:4b, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 12290, seq 1, length 64
+3a:40:ee:31:9e:cd > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: arp who-has 192.168.1.1 tell 192.168.1.3
+a6:f9:52:b6:1e:69 > 0e:ab:f8:0c:10:4b, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 12290, seq 2, length 64
 \end{Verbatim}
 
 \begin{Verbatim}
+r3:~# tcpdump -tne -i eth0
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
 fa:de:dc:30:96:57 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: arp who-has 192.168.2.2 tell 192.168.2.1
 ee:97:f2:ab:47:0c > fa:de:dc:30:96:57, ethertype ARP (0x0806), length 42: arp reply 192.168.2.2 is-at ee:97:f2:ab:47:0c
-fa:de:dc:30:96:57 > ee:97:f2:ab:47:0c, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 11778, seq 1, length 64
-ee:97:f2:ab:47:0c > fa:de:dc:30:96:57, ethertype IPv4 (0x0800), length 98: 192.168.5.1 > 192.168.1.1: ICMP echo reply, id 11778, seq 1, length 64
-ee:97:f2:ab:47:0c > fa:de:dc:30:96:57, ethertype ARP (0x0806), length 42: arp who-has 192.168.2.1 tell 192.168.2.2
-fa:de:dc:30:96:57 > ee:97:f2:ab:47:0c, ethertype ARP (0x0806), length 42: arp reply 192.168.2.1 is-at fa:de:dc:30:96:57
+fa:de:dc:30:96:57 > ee:97:f2:ab:47:0c, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 12290, seq 1, length 64
+fa:de:dc:30:96:57 > ee:97:f2:ab:47:0c, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 12290, seq 2, length 64
 \end{Verbatim}
 
 Затем маршрутизатор отправил его далее.
 
 \begin{Verbatim}
-c2:57:e2:f3:3f:00 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: arp who-has 192.168.5.1 tell 192.168.5.2
+ws2:~# tcpdump -tne -i eth0
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+c2:57:e2:f3:3f:00 > da:53:12:09:ea:4e, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 12290, seq 1, length 64
+da:53:12:09:ea:4e > c2:57:e2:f3:3f:00, ethertype IPv4 (0x0800), length 98: 192.168.5.1 > 192.168.1.1: ICMP echo reply, id 12290, seq 1, length 64
+c2:57:e2:f3:3f:00 > da:53:12:09:ea:4e, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 12290, seq 2, length 64
+da:53:12:09:ea:4e > c2:57:e2:f3:3f:00, ethertype IPv4 (0x0800), length 98: 192.168.5.1 > 192.168.1.1: ICMP echo reply, id 12290, seq 2, length 64
+c2:57:e2:f3:3f:00 > da:53:12:09:ea:4e, ethertype ARP (0x0806), length 42: arp who-has 192.168.5.1 tell 192.168.5.2
 da:53:12:09:ea:4e > c2:57:e2:f3:3f:00, ethertype ARP (0x0806), length 42: arp reply 192.168.5.1 is-at da:53:12:09:ea:4e
-c2:57:e2:f3:3f:00 > da:53:12:09:ea:4e, ethertype IPv4 (0x0800), length 98: 192.168.1.1 > 192.168.5.1: ICMP echo request, id 11778, seq 1, length 64
-da:53:12:09:ea:4e > c2:57:e2:f3:3f:00, ethertype IPv4 (0x0800), length 98: 192.168.5.1 > 192.168.1.1: ICMP echo reply, id 11778, seq 1, length 64
-da:53:12:09:ea:4e > c2:57:e2:f3:3f:00, ethertype ARP (0x0806), length 42: arp who-has 192.168.5.2 tell 192.168.5.1
-c2:57:e2:f3:3f:00 > da:53:12:09:ea:4e, ethertype ARP (0x0806), length 42: arp reply 192.168.5.2 is-at c2:57:e2:f3:3f:00
 \end{Verbatim}
 
 

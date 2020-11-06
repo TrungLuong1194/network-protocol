@@ -77,6 +77,7 @@ router rip
 network eth0
 network eth1
 network eth2
+! network eth3
 
 ! Уменьшаем значения всех таймеров для ускорения опытов.
 ! Рассылка: 10 сек., устаревание: 60 cек., сборка мусора: 120 сек.
@@ -85,7 +86,7 @@ timers basic 10 60 120
 ! Следующие две строчки заставляют маршрутизатор
 ! добавлять в сообщения протокола RIP все известные ему маршруты.
 redistribute kernel
-redistribute connected
+! redistribute connected
 
 ! Это имя файла журнала службы RIP.
 ! Его содержимое можно изучить в случае неполадок
@@ -125,11 +126,11 @@ log file /var/log/quagga/ripd.log
 Вывод \textbf{traceroute} от узла \textbf{wsp2} до \textbf{wsp1} при нормальной работе сети.
 
 \begin{Verbatim}
-wsp2:~# traceroute 10.10.1.1
+wsp2:~# traceroute -n 10.10.1.1
 traceroute to 10.10.1.1 (10.10.1.1), 64 hops max, 40 byte packets
- 1  10.10.6.1 (10.10.6.1)  1 ms  1 ms  1 ms
- 2  10.10.4.2 (10.10.4.2)  1 ms  1 ms  1 ms
- 3  10.10.1.1 (10.10.1.1)  1 ms  1 ms  1 ms
+ 1  10.10.6.1  1 ms  0 ms  0 ms
+ 2  10.10.3.1  11 ms  0 ms  0 ms
+ 3  10.10.1.1  25 ms  0 ms  1 ms
 \end{Verbatim}
 
 Вывод \textbf{traceroute} от узла такого-то до внешнего IP (195.19.38.2 сгодится).
@@ -141,20 +142,19 @@ traceroute to 10.10.1.1 (10.10.1.1), 64 hops max, 40 byte packets
 Вывод сообщения RIP.
 
 \begin{Verbatim}
-r2:~# tcpdump -tnv udp
-tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 124, routes: 6
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
+r2:~# tcpdump -tvn -s 1518 udp -i eth0
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 1518 bytes
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 92) 10.10.3.2.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 64, routes: 3
+	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self
+	  AFI: IPv4:       10.10.4.0/24, tag 0x0000, metric: 1, next-hop: self
+	  AFI: IPv4:       10.10.6.0/24, tag 0x0000, metric: 1, next-hop: self
 IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 112) 10.10.3.1.520 > 224.0.0.9.520: 
 	RIPv2, Response, length: 84, routes: 4
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 124, routes: 6
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
+	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 1, next-hop: self
+	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self
+	  AFI: IPv4:       10.10.4.0/24, tag 0x0000, metric: 2, next-hop: self
+	  AFI: IPv4:       10.10.5.0/24, tag 0x0000, metric: 1, next-hop: self
 ...
 \end{Verbatim}
 
@@ -168,11 +168,10 @@ Sub-codes:
       (i) - interface
 
      Network            Next Hop         Metric From            Tag Time
-K(r) 0.0.0.0/0          172.16.0.1            1 self              0
 R(n) 10.10.1.0/24       10.10.2.1             2 10.10.2.1         0 00:52
 C(i) 10.10.2.0/24       0.0.0.0               1 self              0
-R(n) 10.10.3.0/24       10.10.6.1             2 10.10.6.1         0 00:49
-R(n) 10.10.4.0/24       10.10.6.1             2 10.10.6.1         0 00:49
+R(n) 10.10.3.0/24       10.10.5.1             2 10.10.5.1         0 00:52
+R(n) 10.10.4.0/24       10.10.2.1             2 10.10.2.1         0 00:52
 C(i) 10.10.5.0/24       0.0.0.0               1 self              0
 C(i) 10.10.6.0/24       0.0.0.0               1 self              0
 \end{Verbatim}
@@ -182,10 +181,10 @@ C(i) 10.10.6.0/24       0.0.0.0               1 self              0
 \begin{Verbatim}
 r1:~# ip r
 10.10.6.0/24 dev eth1  proto kernel  scope link  src 10.10.6.2 
-10.10.4.0/24 via 10.10.6.1 dev eth1  proto zebra  metric 2 
+10.10.4.0/24 via 10.10.2.1 dev eth0  proto zebra  metric 2 
 10.10.5.0/24 dev eth2  proto kernel  scope link  src 10.10.5.2 
 10.10.2.0/24 dev eth0  proto kernel  scope link  src 10.10.2.2 
-10.10.3.0/24 via 10.10.6.1 dev eth1  proto zebra  metric 2 
+10.10.3.0/24 via 10.10.5.1 dev eth2  proto zebra  metric 2 
 10.10.1.0/24 via 10.10.2.1 dev eth0  proto zebra  metric 2 
 172.16.0.0/16 dev eth3  proto kernel  scope link  src 172.16.0.20 
 default via 172.16.0.1 dev eth3 
@@ -202,16 +201,16 @@ interface eth0
 ip rip split-horizon poisoned-reverse
 
 # bash
-r4:~# tcpdump -nvt -i eth0
+r4:~# tcpdump -tnv udp -i eth0
 tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 172) 10.10.1.2.520 > 224.0.0.9.520: 
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 172) 10.10.1.3.520 > 224.0.0.9.520: 
 	RIPv2, Response, length: 144, routes: 7
 	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 132) 10.10.1.3.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 104, routes: 5
+	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 16, next-hop: self[|rip]
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 112) 10.10.1.2.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 84, routes: 4
 	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
+	  AFI: IPv4:       10.10.3.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
 ...
 \end{Verbatim}
 
@@ -221,16 +220,16 @@ interface eth0
 no ip rip split-horizon
 
 # bash
-r4:~# tcpdump -nvt -i eth0
+r4:~# tcpdump -tnv udp -i eth0
 tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 172) 10.10.1.3.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 144, routes: 7
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.1.3.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 124, routes: 6
+	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 1, next-hop: self
 	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 172) 10.10.1.2.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 144, routes: 7
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self[|rip]
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 92) 10.10.1.2.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 64, routes: 3
+	  AFI: IPv4:       10.10.3.0/24, tag 0x0000, metric: 1, next-hop: self
+	  AFI: IPv4:       10.10.5.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
 ...
 \end{Verbatim}
 
@@ -251,28 +250,27 @@ Sub-codes:
       (i) - interface
 
      Network            Next Hop         Metric From            Tag Time
-R(n) 0.0.0.0/0          10.10.5.2             2 10.10.5.2         0 00:54
 C(i) 10.10.1.0/24       0.0.0.0               1 self              0
-R(n) 10.10.2.0/24       10.10.5.2             2 10.10.5.2         0 00:54
+R(n) 10.10.2.0/24       10.10.1.3             2 10.10.1.3         0 01:00
 C(i) 10.10.3.0/24       0.0.0.0               1 self              0
-R(n) 10.10.4.0/24       10.10.3.2             2 10.10.3.2         0 01:00
+R(n) 10.10.4.0/24       10.10.1.3             2 10.10.1.3         0 01:00
 C(i) 10.10.5.0/24       0.0.0.0               1 self              0
-R(n) 10.10.6.0/24       10.10.3.2             2 10.10.3.2         0 01:00
+R(n) 10.10.6.0/24       10.10.3.2             2 10.10.3.2         0 00:58
 \end{Verbatim}
 
 \begin{Verbatim}
-wsp1:~# ping -c 1 10.10.6.3
+wsp1:~# ping -c 2 10.10.6.3
 PING 10.10.6.3 (10.10.6.3) 56(84) bytes of data.
-64 bytes from 10.10.6.3: icmp_seq=1 ttl=62 time=34.3 ms
+64 bytes from 10.10.6.3: icmp_seq=1 ttl=62 time=44.6 ms
+64 bytes from 10.10.6.3: icmp_seq=2 ttl=62 time=1.73 ms
 
 --- 10.10.6.3 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 34.367/34.367/34.367/0.000 ms
-
+2 packets transmitted, 2 received, 0% packet loss, time 1011ms
+rtt min/avg/max/mdev = 1.734/23.189/44.645/21.456 ms
 wsp1:~# traceroute 10.10.6.3
 traceroute to 10.10.6.3 (10.10.6.3), 64 hops max, 40 byte packets
- 1  10.10.1.2 (10.10.1.2)  1 ms  0 ms  0 ms
- 2  10.10.4.1 (10.10.4.1)  1 ms  1 ms  1 ms
+ 1  10.10.1.3 (10.10.1.3)  1 ms  1 ms  0 ms
+ 2  10.10.3.2 (10.10.3.2)  1 ms  1 ms  1 ms
  3  10.10.6.3 (10.10.6.3)  1 ms  1 ms  1 ms
 \end{Verbatim}
 
@@ -288,27 +286,26 @@ Sub-codes:
       (i) - interface
 
      Network            Next Hop         Metric From            Tag Time
-R(n) 0.0.0.0/0          10.10.5.2             2 10.10.5.2         0 01:00
 C(i) 10.10.1.0/24       0.0.0.0               1 self              0
-R(n) 10.10.2.0/24       10.10.5.2             2 10.10.5.2         0 01:00
+R(n) 10.10.2.0/24       10.10.5.2             2 10.10.5.2         0 00:58
 C(i) 10.10.3.0/24       0.0.0.0               1 self              0
-R(n) 10.10.4.0/24       10.10.3.2             2 10.10.3.2         0 00:56
+R(n) 10.10.4.0/24       10.10.3.2             2 10.10.3.2         0 00:55
 C(i) 10.10.5.0/24       0.0.0.0               1 self              0
-R(n) 10.10.6.0/24       10.10.3.2             2 10.10.3.2         0 00:56
+R(n) 10.10.6.0/24       10.10.3.2             2 10.10.3.2         0 00:55
 \end{Verbatim}
 
 
 Вывод \textbf{traceroute} от узла \textbf{wsp1} до \textbf{wsp2} после того, как служба RIP перестроила таблицы маршрутизации.
 
 \begin{Verbatim}
-wsp1:~# ping -c 1 10.10.6.3
+wsp1:~# ping -c 2 10.10.6.3
 PING 10.10.6.3 (10.10.6.3) 56(84) bytes of data.
-64 bytes from 10.10.6.3: icmp_seq=1 ttl=62 time=18.1 ms
+64 bytes from 10.10.6.3: icmp_seq=1 ttl=62 time=12.4 ms
+64 bytes from 10.10.6.3: icmp_seq=2 ttl=62 time=1.71 ms
 
 --- 10.10.6.3 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 18.153/18.153/18.153/0.000 ms
-
+2 packets transmitted, 2 received, 0% packet loss, time 1004ms
+rtt min/avg/max/mdev = 1.710/7.100/12.490/5.390 ms
 wsp1:~# traceroute 10.10.6.3
 traceroute to 10.10.6.3 (10.10.6.3), 64 hops max, 40 byte packets
  1  10.10.1.2 (10.10.1.2)  1 ms  1 ms  1 ms
@@ -330,29 +327,27 @@ Sub-codes:
       (i) - interface
 
      Network            Next Hop         Metric From            Tag Time
-R(n) 0.0.0.0/0          10.10.6.2             2 10.10.6.2         0 00:53
-R(n) 10.10.1.0/24       10.10.4.2            16 10.10.4.2         0 01:45
-R(n) 10.10.2.0/24       10.10.6.2             2 10.10.6.2         0 00:53
+R(n) 10.10.2.0/24       10.10.6.2             2 10.10.6.2         0 00:58
 C(i) 10.10.3.0/24       0.0.0.0               1 self              0
 C(i) 10.10.4.0/24       0.0.0.0               1 self              0
-R(n) 10.10.5.0/24       10.10.6.2             2 10.10.6.2         0 00:53
+R(n) 10.10.5.0/24       10.10.6.2             2 10.10.6.2         0 00:58
 C(i) 10.10.6.0/24       0.0.0.0               1 self              0
 \end{Verbatim}
 
 Сообщения протокола RIP с 16-ой метрикой.
 
 \begin{Verbatim}
-r2:~# tcpdump -nvt -i eth0
+r2:~# tcpdump -tvn udp -i eth0
 tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 112) 10.10.3.2.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 84, routes: 4
+	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self
+	  AFI: IPv4:       10.10.4.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
 uml_net_start_xmit: failed(-111)
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 124, routes: 6
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 16, next-hop: self[|rip]
-IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 152) 10.10.3.2.520 > 224.0.0.9.520: 
-	RIPv2, Response, length: 124, routes: 6
-	  AFI: IPv4:         0.0.0.0/0 , tag 0x0000, metric: 2, next-hop: self
-	  AFI: IPv4:       10.10.1.0/24, tag 0x0000, metric: 16, next-hop: self[|rip]
+IP (tos 0x0, ttl 1, id 0, offset 0, flags [DF], proto UDP (17), length 112) 10.10.3.2.520 > 224.0.0.9.520: 
+	RIPv2, Response, length: 84, routes: 4
+	  AFI: IPv4:       10.10.2.0/24, tag 0x0000, metric: 2, next-hop: self
+	  AFI: IPv4:       10.10.4.0/24, tag 0x0000, metric: 1, next-hop: self[|rip]
 \end{Verbatim}
 
 

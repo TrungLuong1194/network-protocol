@@ -1,0 +1,14 @@
+1) connect netkit virtual machine to internet:
+
+Perform command in host name:
+
+- sudo iptables -t nat -I POSTROUTING 1 -o wlp1s0 -j MASQUERADE
+- sudo iptables -I FORWARD 1 -i nk_tap_trungluo -j ACCEPT
+- echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+
+2) Run one machine at a time
+
+- Fisrt run r1: lstart -d net r1
+- Second run r2: lstart -d net r2
+- Last: ltabstart -d net
+
